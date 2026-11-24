@@ -90,11 +90,11 @@ function missing_schema_tables(): array
 {
     $statement = db()->query(
         "SELECT table_name FROM information_schema.tables
-         WHERE table_schema = DATABASE() AND table_name IN ('users', 'siswa')"
+         WHERE table_schema = DATABASE() AND table_name IN ('users', 'siswa', 'kelas', 'jurusan')"
     );
     $existing = $statement->fetchAll(PDO::FETCH_COLUMN);
 
-    return array_values(array_diff(['users', 'siswa'], $existing));
+    return array_values(array_diff(['users', 'siswa', 'kelas', 'jurusan'], $existing));
 }
 
 function missing_schema_requirements(): array
@@ -223,4 +223,50 @@ function report_database_error(Throwable $error): void
 {
     error_log($error->__toString());
     set_flash('danger', 'Terjadi kesalahan saat mengakses database. Periksa konfigurasi dan coba lagi.');
+}
+
+function upload_student_photo(array $file, ?string $oldPhoto = null): array
+{
+    if (!isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE) {
+        return ['ok' => true, 'photo' => $oldPhoto, 'message' => null];
+    }
+    if (!is_int($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Foto gagal diunggah.'];
+    }
+    if (!isset($file['tmp_name'], $file['size']) || !is_string($file['tmp_name'])) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Foto tidak valid.'];
+    }
+    if ((int) $file['size'] > 2 * 1024 * 1024) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Ukuran foto maksimal 2 MB.'];
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    $extensions = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
+    if (!isset($extensions[$mime])) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Foto harus berformat JPG, JPEG, atau PNG.'];
+    }
+
+    $directory = dirname(__DIR__) . '/assets/foto';
+    if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Folder penyimpanan foto tidak dapat dibuat.'];
+    }
+    $photo = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+    $destination = $directory . '/' . $photo;
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        return ['ok' => false, 'photo' => $oldPhoto, 'message' => 'Foto gagal disimpan.'];
+    }
+
+    return ['ok' => true, 'photo' => $photo, 'message' => 'Foto berhasil diunggah.'];
+}
+
+function delete_student_photo(?string $photo): void
+{
+    if ($photo === null || $photo === '') {
+        return;
+    }
+    $path = dirname(__DIR__) . '/assets/foto/' . basename($photo);
+    if (is_file($path)) {
+        unlink($path);
+    }
 }

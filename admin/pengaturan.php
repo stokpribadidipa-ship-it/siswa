@@ -70,31 +70,31 @@ render_header('Pengaturan Akun', 'pengaturan.php', $user);
 ?>
 <section class="panel form-panel">
     <div class="panel-heading"><div><h2>Informasi akun</h2><p>Perbarui nama, email, atau password Anda.</p></div></div>
-    <?php if ($errors !== []): ?><div class="alert alert-danger"><ul class="mb-0"><?php foreach ($errors as $error): ?><li><?= e($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
+    <?php if ($errors !== []): ?><div class="alert alert-danger" role="alert"><ul class="mb-0"><?php foreach ($errors as $error): ?><li><?= e($error) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
     <form method="post" class="student-form">
         <?= csrf_field() ?>
         <div class="form-grid">
-            <div><label for="nama" class="form-label">Nama lengkap</label><input id="nama" name="nama" class="form-control" minlength="2" maxlength="100" required value="<?= e($name) ?>"></div>
-            <div><label for="email" class="form-label">Email</label><input id="email" name="email" type="email" class="form-control" maxlength="100" required value="<?= e($email) ?>"></div>
+            <div><label for="nama" class="form-label">Nama lengkap</label><input id="nama" name="nama" autocomplete="name" class="form-control" minlength="2" maxlength="100" required value="<?= e($name) ?>"></div>
+            <div><label for="email" class="form-label">Email</label><input id="email" name="email" type="email" autocomplete="email" class="form-control" maxlength="100" required value="<?= e($email) ?>"></div>
             <div class="form-section-title form-wide"><h3>Ganti password <span>(opsional)</span></h3><p>Password lama diperlukan untuk menyimpan password baru.</p></div>
             <div>
                 <label for="password_lama" class="form-label">Password lama</label>
                 <div class="input-group">
-                    <input id="password_lama" name="password_lama" type="password" class="form-control" maxlength="72" autocomplete="current-password">
+                    <input id="password_lama" name="password_lama" type="password" class="form-control" maxlength="72" autocomplete="current-password" data-optional-password>
                     <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password_lama" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
                 </div>
             </div>
             <div>
                 <label for="password_baru" class="form-label">Password baru</label>
                 <div class="input-group">
-                    <input id="password_baru" name="password_baru" type="password" class="form-control" minlength="8" maxlength="72" autocomplete="new-password">
+                    <input id="password_baru" name="password_baru" type="password" class="form-control" minlength="8" maxlength="72" autocomplete="new-password" data-optional-password>
                     <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password_baru" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
                 </div>
             </div>
             <div>
                 <label for="konfirmasi_password" class="form-label">Konfirmasi password baru</label>
                 <div class="input-group">
-                    <input id="konfirmasi_password" name="konfirmasi_password" type="password" class="form-control" minlength="8" maxlength="72" autocomplete="new-password">
+                    <input id="konfirmasi_password" name="konfirmasi_password" type="password" class="form-control" minlength="8" maxlength="72" autocomplete="new-password" data-optional-password data-match="password_baru" data-match-message="Konfirmasi password baru harus sama dengan password baru.">
                     <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="konfirmasi_password" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
                 </div>
             </div>

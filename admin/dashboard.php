@@ -7,7 +7,7 @@ $pdo = db();
 
 $ownStudent = null;
 if ($user['role'] === 'siswa' && $user['siswa_id'] !== null) {
-    $ownStatement = $pdo->prepare('SELECT id, nis, nama, kelas, jurusan, alamat, jenis_kelamin, no_telepon, created_at, updated_at FROM siswa WHERE id = :id');
+    $ownStatement = $pdo->prepare('SELECT s.id, s.nis, s.nama, k.nama AS kelas, j.nama AS jurusan, s.alamat, s.jenis_kelamin, s.no_telepon, s.foto, s.created_at, s.updated_at FROM siswa s JOIN kelas k ON k.id=s.kelas_id JOIN jurusan j ON j.id=s.jurusan_id WHERE s.id=:id');
     $ownStatement->execute(['id' => $user['siswa_id']]);
     $ownStudent = $ownStatement->fetch() ?: null;
 }
@@ -46,31 +46,31 @@ if ($user['role'] === 'siswa') {
 
 $stats = [
     'siswa' => (int) $pdo->query('SELECT COUNT(*) FROM siswa')->fetchColumn(),
-    'kelas' => (int) $pdo->query('SELECT COUNT(DISTINCT kelas) FROM siswa')->fetchColumn(),
-    'jurusan' => (int) $pdo->query('SELECT COUNT(DISTINCT jurusan) FROM siswa')->fetchColumn(),
-    'pengguna' => (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn(),
+    'kelas' => (int) $pdo->query('SELECT COUNT(*) FROM kelas')->fetchColumn(),
+    'jurusan' => (int) $pdo->query('SELECT COUNT(*) FROM jurusan')->fetchColumn(),
+    'petugas' => (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'petugas'")->fetchColumn(),
 ];
-$recentStudents = $pdo->query('SELECT id, nis, nama, kelas, jurusan, created_at FROM siswa ORDER BY created_at DESC, id DESC LIMIT 5')->fetchAll();
+$recentStudents = $pdo->query('SELECT s.id, s.nis, s.nama, k.nama AS kelas, j.nama AS jurusan, s.created_at FROM siswa s JOIN kelas k ON k.id=s.kelas_id JOIN jurusan j ON j.id=s.jurusan_id ORDER BY s.created_at DESC, s.id DESC LIMIT 5')->fetchAll();
 $recentActivities = $pdo->query("SELECT activity, subject, created_at FROM (SELECT 'Siswa ditambahkan' AS activity, nama AS subject, created_at FROM siswa UNION ALL SELECT 'Pengguna terdaftar' AS activity, nama AS subject, created_at FROM users) AS activity_log ORDER BY created_at DESC LIMIT 5")->fetchAll();
 
 render_header('Dashboard', 'dashboard.php', $user);
 ?>
 <section class="welcome-banner">
-    <div><span class="eyebrow">RINGKASAN SEKOLAH</span><h2>Halo, <?= e($user['nama']) ?>.</h2><p>Berikut ringkasan data yang tersimpan di aplikasi.</p></div>
+    <div><span class="eyebrow">RINGKASAN SEKOLAH</span><h2>Selamat datang, <?= e($user['nama']) ?>.</h2><p>Pantau data siswa dan aktivitas sekolah dari satu tempat.</p></div>
     <span class="welcome-icon"><i class="bi bi-mortarboard"></i></span>
 </section>
-<section class="stats-grid" aria-label="Statistik">
+<section class="stats-grid <?= $user['role'] === 'admin' ? 'stats-grid-admin' : '' ?>" aria-label="Statistik">
     <?php foreach ([
         ['Total siswa', $stats['siswa'], 'bi-people', 'blue'],
         ['Total kelas', $stats['kelas'], 'bi-door-open', 'purple'],
         ['Total jurusan', $stats['jurusan'], 'bi-diagram-3', 'green'],
-        ...($user['role'] === 'admin' ? [['Total pengguna', $stats['pengguna'], 'bi-person-check', 'orange']] : []),
+        ...($user['role'] === 'admin' ? [['Petugas', $stats['petugas'], 'bi-person-badge', 'orange']] : []),
     ] as [$label, $value, $icon, $color]): ?>
         <article class="stat-card">
             <span class="stat-icon <?= e($color) ?>"><i class="bi <?= e($icon) ?>"></i></span>
             <span class="stat-label"><?= e($label) ?></span>
             <strong class="stat-value"><?= e($value) ?></strong>
-            <span class="stat-note">Data terbaru dari database</span>
+            <span class="stat-note"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Terhubung ke database</span>
         </article>
     <?php endforeach; ?>
 </section>
@@ -78,8 +78,8 @@ render_header('Dashboard', 'dashboard.php', $user);
     <?php if (in_array($user['role'], ['admin', 'petugas'], true)): ?><section class="panel">
         <div class="panel-heading"><div><h2>Siswa terbaru</h2><p>Lima data siswa yang terakhir ditambahkan.</p></div><a class="btn btn-outline-primary btn-sm" href="siswa.php">Lihat semua <i class="bi bi-arrow-right"></i></a></div>
         <div class="table-responsive">
-            <table class="table align-middle data-table mb-0">
-                <thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>Jurusan</th><th>Ditambahkan</th></tr></thead>
+            <table class="table align-middle data-table dashboard-recent-table mb-0">
+                <thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>Jurusan</th><th>Tanggal</th></tr></thead>
                 <tbody>
                 <?php if ($recentStudents === []): ?>
                     <tr><td class="empty-state" colspan="5">Belum ada data siswa.<?php if ($user['role'] === 'admin'): ?> <a href="siswa-form.php">Tambahkan siswa pertama</a>.<?php endif; ?></td></tr>
@@ -87,7 +87,7 @@ render_header('Dashboard', 'dashboard.php', $user);
                     <tr>
                         <td><?= e($student['nis']) ?></td>
                         <td><a class="table-primary-link" href="siswa-detail.php?id=<?= e($student['id']) ?>"><?= e($student['nama']) ?></a></td>
-                        <td><?= e($student['kelas']) ?></td>
+                        <td><span class="student-class-badge"><?= e($student['kelas']) ?></span></td>
                         <td><?= e($student['jurusan']) ?></td>
                         <td><?= e(date('d/m/Y', strtotime($student['created_at']))) ?></td>
                     </tr>

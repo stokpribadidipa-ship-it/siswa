@@ -4,22 +4,41 @@ CREATE DATABASE IF NOT EXISTS db_sekolah
 
 USE db_sekolah;
 
+CREATE TABLE IF NOT EXISTS kelas (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nama VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_kelas_nama (nama)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS jurusan (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nama VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_jurusan_nama (nama)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS siswa (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     nis VARCHAR(10) NOT NULL,
     nama VARCHAR(100) NOT NULL,
-    kelas VARCHAR(20) NOT NULL,
-    jurusan VARCHAR(50) NOT NULL,
+    kelas_id INT UNSIGNED NOT NULL,
+    jurusan_id INT UNSIGNED NOT NULL,
     alamat TEXT NOT NULL,
     jenis_kelamin ENUM('L', 'P') NOT NULL,
     no_telepon VARCHAR(13) NOT NULL,
+    foto VARCHAR(255) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_siswa_nis (nis),
     KEY idx_siswa_nama (nama),
-    KEY idx_siswa_kelas (kelas),
-    KEY idx_siswa_jurusan (jurusan)
+    KEY idx_siswa_kelas (kelas_id),
+    KEY idx_siswa_jurusan (jurusan_id),
+    CONSTRAINT fk_siswa_kelas FOREIGN KEY (kelas_id) REFERENCES kelas (id) ON UPDATE CASCADE,
+    CONSTRAINT fk_siswa_jurusan FOREIGN KEY (jurusan_id) REFERENCES jurusan (id) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (

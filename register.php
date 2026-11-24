@@ -88,19 +88,27 @@ render_auth_start('Daftar');
 <?php endif; ?>
 <form method="post" class="auth-form">
     <?= csrf_field() ?>
-    <label for="nis" class="form-label">NIS</label>
-    <input id="nis" name="nis" type="text" class="form-control" inputmode="numeric" minlength="10" maxlength="10" pattern="[0-9]{10}" title="Masukkan NIS yang sudah terdaftar, tepat 10 angka." required value="<?= e($values['nis']) ?>">
-    <label for="email" class="form-label mt-3">Email</label>
-    <input id="email" name="email" type="email" class="form-control" autocomplete="email" maxlength="100" required value="<?= e($values['email']) ?>">
-    <label for="password" class="form-label mt-3">Password</label>
-    <div class="input-group">
-        <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="72" required>
-        <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
+    <div class="auth-field">
+        <label for="nis" class="form-label">NIS</label>
+        <input id="nis" name="nis" type="text" class="form-control" inputmode="numeric" minlength="10" maxlength="10" pattern="[0-9]{10}" title="Masukkan NIS yang sudah terdaftar, tepat 10 angka." required value="<?= e($values['nis']) ?>">
     </div>
-    <label for="password_confirmation" class="form-label mt-3">Konfirmasi password</label>
-    <div class="input-group">
-        <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="72" required>
-        <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password_confirmation" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
+    <div class="auth-field">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" name="email" type="email" class="form-control" autocomplete="email" maxlength="100" required value="<?= e($values['email']) ?>">
+    </div>
+    <div class="auth-field">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+            <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password" aria-label="Tampilkan password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+        </div>
+    </div>
+    <div class="auth-field">
+        <label for="password_confirmation" class="form-label">Konfirmasi password</label>
+        <div class="input-group">
+            <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password" minlength="8" maxlength="72" required data-match="password">
+            <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password_confirmation" aria-label="Tampilkan password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+        </div>
     </div>
     <button class="btn btn-primary w-100 auth-submit" type="submit">Daftar <i class="bi bi-arrow-right ms-1"></i></button>
 </form>

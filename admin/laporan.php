@@ -6,8 +6,8 @@ $user = require_auth(['admin']);
 $pdo = db();
 $kelas = normalize_text(input_string($_GET, 'kelas'));
 $jurusan = normalize_text(input_string($_GET, 'jurusan'));
-$classes = $pdo->query('SELECT DISTINCT kelas FROM siswa ORDER BY kelas')->fetchAll(PDO::FETCH_COLUMN);
-$majors = $pdo->query('SELECT DISTINCT jurusan FROM siswa ORDER BY jurusan')->fetchAll(PDO::FETCH_COLUMN);
+$classes = $pdo->query('SELECT nama FROM kelas ORDER BY nama')->fetchAll(PDO::FETCH_COLUMN);
+$majors = $pdo->query('SELECT nama FROM jurusan ORDER BY nama')->fetchAll(PDO::FETCH_COLUMN);
 $invalidFilter = (isset($_GET['kelas']) && !is_string($_GET['kelas']))
     || (isset($_GET['jurusan']) && !is_string($_GET['jurusan']))
     || !in_array($kelas, array_merge([''], $classes), true)
@@ -19,21 +19,22 @@ if ($invalidFilter) {
 $conditions = [];
 $parameters = [];
 if ($kelas !== '') {
-    $conditions[] = 'kelas = :kelas';
+    $conditions[] = 'k.nama = :kelas';
     $parameters['kelas'] = $kelas;
 }
 if ($jurusan !== '') {
-    $conditions[] = 'jurusan = :jurusan';
+    $conditions[] = 'j.nama = :jurusan';
     $parameters['jurusan'] = $jurusan;
 }
 $where = $conditions === [] ? '' : ' WHERE ' . implode(' AND ', $conditions);
-$totalStatement = $pdo->prepare('SELECT COUNT(*) FROM siswa' . $where);
+$join = ' FROM siswa s JOIN kelas k ON k.id=s.kelas_id JOIN jurusan j ON j.id=s.jurusan_id';
+$totalStatement = $pdo->prepare('SELECT COUNT(*)' . $join . $where);
 $totalStatement->execute($parameters);
 $total = (int) $totalStatement->fetchColumn();
-$classStatement = $pdo->prepare('SELECT kelas, COUNT(*) AS jumlah FROM siswa' . $where . ' GROUP BY kelas ORDER BY kelas');
+$classStatement = $pdo->prepare('SELECT k.nama AS kelas, COUNT(*) AS jumlah' . $join . $where . ' GROUP BY k.id, k.nama ORDER BY k.nama');
 $classStatement->execute($parameters);
 $classSummary = $classStatement->fetchAll();
-$majorStatement = $pdo->prepare('SELECT jurusan, COUNT(*) AS jumlah FROM siswa' . $where . ' GROUP BY jurusan ORDER BY jurusan');
+$majorStatement = $pdo->prepare('SELECT j.nama AS jurusan, COUNT(*) AS jumlah' . $join . $where . ' GROUP BY j.id, j.nama ORDER BY j.nama');
 $majorStatement->execute($parameters);
 $majorSummary = $majorStatement->fetchAll();
 

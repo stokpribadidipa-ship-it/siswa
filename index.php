@@ -52,12 +52,16 @@ render_auth_start('Masuk');
 <?php endif; ?>
 <form method="post" class="auth-form">
     <?= csrf_field() ?>
-    <label for="email" class="form-label">Email</label>
-    <input id="email" name="email" type="email" class="form-control" autocomplete="email" maxlength="100" required value="<?= e(input_string($_POST, 'email')) ?>">
-    <label for="password" class="form-label mt-3">Password</label>
-    <div class="input-group">
-        <input id="password" name="password" type="password" class="form-control" autocomplete="current-password" maxlength="72" required>
-        <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password" aria-label="Tampilkan password"><i class="bi bi-eye"></i></button>
+    <div class="auth-field">
+        <label for="email" class="form-label">Email</label>
+        <input id="email" name="email" type="email" class="form-control" autocomplete="email" maxlength="100" required value="<?= e(input_string($_POST, 'email')) ?>">
+    </div>
+    <div class="auth-field">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+            <input id="password" name="password" type="password" class="form-control" autocomplete="current-password" maxlength="72" required>
+            <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="password" aria-label="Tampilkan password"><i class="bi bi-eye" aria-hidden="true"></i></button>
+        </div>
     </div>
     <button class="btn btn-primary w-100 auth-submit" type="submit">Masuk <i class="bi bi-arrow-right ms-1"></i></button>
 </form>
